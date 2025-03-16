@@ -1,0 +1,9 @@
+[submodule "3rd/ftxui"]
+	path = 3rd/FTXUI
+	url = https://github.com/ArthurSonzogni/FTXUI.git
+[submodule "3rd/pybind11"]
+	path = 3rd/pybind11
+	url = https://github.com/pybind/pybind11.git
+[submodule "3rd/nlohmann"]
+	path = 3rd/nlohmann
+	url = https://github.com/nlohmann/json.git
