@@ -7,3 +7,6 @@
 [submodule "3rd/nlohmann"]
 	path = 3rd/nlohmann
 	url = https://github.com/nlohmann/json.git
+[submodule "3rd/FTXUI"]
+	path = 3rd/FTXUI
+	url = https://github.com/ArthurSonzogni/FTXUI.git
