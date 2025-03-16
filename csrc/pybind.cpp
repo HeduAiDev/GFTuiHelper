@@ -38,8 +38,8 @@ void PyDiff_(py::array_t<T> a, py::array_t<T> b, double accuracy = 1e-3) {
     diff(ptr_a, ptr_b, rows, cols, accuracy);
 }
 
-void PyStartMenuLoop() {
-    start_menu_loop();
+void PyStartMenuLoop(std::string lowcode_command_builder_config) {
+    start_menu_loop(lowcode_command_builder_config);
 }
 
 

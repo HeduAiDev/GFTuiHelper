@@ -137,7 +137,7 @@ namespace tui {
             int default_min_input_width = 0;
             std::vector<ElementRowConfig> elements_config;
             std::function<Element(Element)> default_label_style = [] (Element ele) { return ele | align_right | vcenter; };
-            std::function<Element(Element)> default_input_style = [] (Element ele) { return ele | size(WIDTH, LESS_THAN, 30) | size(WIDTH, GREATER_THAN, 25) | size(HEIGHT, LESS_THAN, 5); };
+            std::function<Element(Element)> default_input_style = [] (Element ele) { return ele | size(WIDTH, LESS_THAN, 30) | size(WIDTH, GREATER_THAN, 25) | size(HEIGHT, LESS_THAN, 15); };
             InputFormOptions() = default;
         };
         
@@ -228,6 +228,8 @@ namespace tui {
         Component RadioFrame(RadioFrameOptions options = RadioFrameOptions());
         Component RadioFrame(ConstStringListRef entries, int* selected, RadioFrameOptions options = RadioFrameOptions());
         Component InputForm(std::vector<InputFormOptions::ElementRowConfig> elements_config, InputFormOptions options = InputFormOptions());
+        Component CreateFromJsonStr(std::string json_str, std::unordered_map<std::string, StringRef> &input_text_map, std::unordered_map<std::string, Ref<int>>& input_select_index_map, \
+            std::unordered_map<std::string, std::vector<std::string>>& input_select_entries_map, std::function<Element(InputState)> text_input_transform = nullptr, std::function<Element(bool open, Element checkbox, Element radiobox)> select_input_transform = nullptr);
 
 
         Component MatrixFrame(float* ptr, int rows, int cols, MatrixFrameOptions<float> options = MatrixFrameOptions<float>());

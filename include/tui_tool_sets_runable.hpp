@@ -83,7 +83,7 @@ namespace tui
         #ifdef __CUDA__
         void diff(half *ptr_a, half *ptr_b, int rows, int cols, double accuracy = 1e-3);
         #endif
-        void start_menu_loop();
+        void start_menu_loop(std::string lowcode_command_builder_config);
     } // namespace runable
     
 } // namespace tui

@@ -17,6 +17,7 @@ add_subdirectory(3rd/FTXUI EXCLUDE_FROM_ALL)
 # add_subdirectory(3rd/FTXUI)
 # pybind11
 add_subdirectory(3rd/pybind11 EXCLUDE_FROM_ALL)
+add_subdirectory(3rd/nlohmann EXCLUDE_FROM_ALL)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR})
 # static lib tui_static
@@ -27,6 +28,7 @@ target_link_libraries(tui_static PRIVATE ftxui::screen
                                     PRIVATE ftxui::dom
                                     PRIVATE ftxui::component
                                     PUBLIC Threads::Threads
+                                    PUBLIC nlohmann_json::nlohmann_json
                                     )
 target_include_directories(tui_static PUBLIC "csrc/include")
 include(tools/merge_static_libs.cmake)
