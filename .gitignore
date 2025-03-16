@@ -7,3 +7,5 @@ __pycache__
 *.dll
 *.lib
 *.so
+*.a
+*.dylib
