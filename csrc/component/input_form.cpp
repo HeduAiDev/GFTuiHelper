@@ -36,24 +36,23 @@ namespace tui {
                 // auto base_config = std::get<BaseElementConfig>(config);
                 std::visit([&input, &base_config](auto&& config) {
                     using T = std::decay_t<decltype(config)>;
-                    if constexpr (std::is_base_of_v<BaseElementConfig, T>) {
-                        base_config = static_cast<BaseElementConfig>(config);
-                        if constexpr (std::is_same_v<T, TextInputElementConfig>) {
-                            if (config.input_type != InputType::Text && config.input_type != InputType::Password && config.input_type != InputType::Number) {
-                                throw std::runtime_error("TextInputElementConfig's input_type should in one of [InputType::Text, InputType::Password, InputType::Number] but now is:" + std::to_string(static_cast<int>(config.input_type)));
-                            }
-                            if (config.input_type == InputType::Password) {
-                                config.password = true;
-                            }
-                            input = Input(config);
-                        } else if constexpr (std::is_same_v<T, SelectInputElementConfig>) {
-                            if (config.input_type != InputType::Select) {
-                                throw std::runtime_error("SelectInputElement's input_type should use InputType::Select but now is:" + std::to_string(static_cast<int>(config.input_type)));
-                            }
-                            input = Dropdown(config);
-                        }
-                    } else {
+                    if constexpr (! std::is_base_of_v<BaseElementConfig, T>) {
                         throw std::runtime_error(std::string("unsupported config type:") + typeid(config).name());
+                    }
+                    base_config = static_cast<BaseElementConfig>(config);
+                    if constexpr (std::is_same_v<T, TextInputElementConfig>) {
+                        if (config.input_type != InputType::Text && config.input_type != InputType::Password && config.input_type != InputType::Number) {
+                            throw std::runtime_error("TextInputElementConfig's input_type should in one of [InputType::Text, InputType::Password, InputType::Number] but now is:" + std::to_string(static_cast<int>(config.input_type)));
+                        }
+                        if (config.input_type == InputType::Password) {
+                            config.password = true;
+                        }
+                        input = Input(config);
+                    } else if constexpr (std::is_same_v<T, SelectInputElementConfig>) {
+                        if (config.input_type != InputType::Select) {
+                            throw std::runtime_error("SelectInputElement's input_type should use InputType::Select but now is:" + std::to_string(static_cast<int>(config.input_type)));
+                        }
+                        input = Dropdown(config);
                     }
                 }, var_config);
                
