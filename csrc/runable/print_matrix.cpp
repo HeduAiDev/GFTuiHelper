@@ -58,6 +58,7 @@ namespace tui {
             options.col_label_style_map[col_id] = {col_id, Color::Red1};
             options.row_label_style_map[row_id] = {row_id, Color::Red1};
             Component main_renderer =  ::tui::component::MatrixFrame(ptr, rows, cols, options);
+            std::cout << "matrix frame executed" << std::endl;
             auto screen = Screen::Create(Dimension::Fixed(screen_size_x), Dimension::Fixed(screen_size_y));
             Render(screen, main_renderer -> Render());
             screen.Print();

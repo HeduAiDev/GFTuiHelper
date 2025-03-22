@@ -8,17 +8,36 @@ namespace tui {
         using namespace ftxui;
         using namespace tui::component;
         using json = nlohmann::json;
-        void start_menu_loop(std::string lowcode_command_builder_config)
+        void start_menu_loop(std::string menu1_config, std::function<std::string(std::string, std::string)> menu1_on_change)
         {
             auto screen = ScreenInteractive::Fullscreen();
             /////////////////////////////////////////////////////////////////////
             // lowcode command builder
             /////////////////////////////////////////////////////////////////////
-            std::unordered_map<std::string, StringRef> input_text_map;
-            std::unordered_map<std::string, Ref<int>> input_select_index_map;
+            std::unordered_map<std::string, std::string> input_text_map;
+            std::unordered_map<std::string, int> input_select_index_map;
             std::unordered_map<std::string, std::vector<std::string>> input_select_entries_map;
-
-            Component command_form = InputFormCreateFromJsonStr(lowcode_command_builder_config, input_text_map, input_select_index_map, input_select_entries_map);
+            StringRef title("Tui Helper");
+            auto on_change = [&](std::string label, std::string input_type) {
+                std::string content = "";
+                if (input_type == "text" || input_type == "password" || input_type == "number") {
+                    content = input_text_map[label];
+                    content = menu1_on_change(label, content);
+                    input_text_map[label] = content;
+                } else if (input_type == "select") {
+                    auto entries = input_select_entries_map[label];
+                    content = entries[input_select_index_map[label]];
+                    content = menu1_on_change(label, content);
+                    for (int i = 0; i < entries.size(); i++) {
+                        if (entries[i] == content) {
+                            input_select_index_map[label] = i;
+                            break;
+                        }
+                    }
+                }
+            };
+            std::function<void()> on_submit = []() {};
+            Component command_form = InputFormCreateFromJsonStr(menu1_config, input_text_map, input_select_index_map, input_select_entries_map, on_change);
             
             
             auto block = ftxui::text("no");
@@ -43,7 +62,7 @@ namespace tui {
             Component main_container = Container::Vertical({tab_section,
                                                             tab_content});
             Component main_renderer = Renderer(main_container, [&]
-                                               { return vbox({text("Tui Helper") | bold | hcenter,
+                                               { return vbox({text(title()) | bold | hcenter,
                                                               tab_section->Render(),
                                                               tab_content->Render()}); });
             screen.Loop(main_renderer);

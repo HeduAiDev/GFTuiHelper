@@ -1,4 +1,4 @@
-from ._C import *
+from .._C import *
 
 try:
     import numpy as np

@@ -18,6 +18,7 @@ add_subdirectory(3rd/FTXUI EXCLUDE_FROM_ALL)
 # pybind11
 add_subdirectory(3rd/pybind11 EXCLUDE_FROM_ALL)
 add_subdirectory(3rd/nlohmann EXCLUDE_FROM_ALL)
+add_subdirectory(tests)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR})
 # static lib tui_static

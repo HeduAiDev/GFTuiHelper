@@ -1,5 +1,8 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/functional.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
+#include <pybind11/complex.h>
 #include "tui_tool_sets_runable.hpp"
 
 using namespace tui::runable;
@@ -38,8 +41,8 @@ void PyDiff_(py::array_t<T> a, py::array_t<T> b, double accuracy = 1e-3) {
     diff(ptr_a, ptr_b, rows, cols, accuracy);
 }
 
-void PyStartMenuLoop(std::string lowcode_command_builder_config) {
-    start_menu_loop(lowcode_command_builder_config);
+void PyStartMenuLoop(std::string menu1_config, std::function<std::string(std::string, std::string)> menu1_on_change) {
+    start_menu_loop(menu1_config, menu1_on_change);
 }
 
 

@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <map>
 #include <nlohmann/json.hpp>
+
 namespace tui {
     namespace component {
         using namespace ftxui;
@@ -55,7 +56,6 @@ namespace tui {
                         input = Dropdown(config);
                     }
                 }, var_config);
-               
                 input = setWidth(input, default_max_input_width, default_min_input_width);
                 if (base_config.max_input_width + base_config.min_input_width >= 0) {
                     input = setWidth(input, base_config.max_input_width, base_config.min_input_width);
@@ -95,8 +95,8 @@ namespace tui {
         }
 
         Component InputFormCreateFromJsonStr(std::string json_str, \
-            std::unordered_map<std::string, StringRef> &input_text_map, std::unordered_map<std::string, Ref<int>>& input_select_index_map, \
-            std::unordered_map<std::string, std::vector<std::string>>& input_select_entries_map, std::function<Element(InputState)> text_input_transform, \
+            std::unordered_map<std::string, std::string> &input_text_map, std::unordered_map<std::string, int>& input_select_index_map, \
+            std::unordered_map<std::string, std::vector<std::string>>& input_select_entries_map, std::function<void(std::string, std::string)> on_change, std::function<void()> on_enter, std::function<Element(InputState)> text_input_transform, \
             std::function<Element(bool open, Element checkbox, Element radiobox)> select_input_transform) {
             std::function<Element(InputState)> default_input_transform = [](InputState state)
             {
@@ -130,6 +130,16 @@ namespace tui {
             int default_max_select_input_height = 15;
             std::string default_align_h_label = "right";
             std::string default_align_v_label = "center";
+            std::unordered_map<std::string, InputType> input_type_map = {
+                {"text", InputType::Text},
+                {"password", InputType::Password},
+                {"number", InputType::Number},
+                {"select", InputType::Select}
+            };
+            std::unordered_map<InputType, std::string> input_type_map_reverse;
+            for (const auto& pair : input_type_map) {
+                input_type_map_reverse[pair.second] = pair.first;
+            }
 
             auto default_select_input_style = [](Element ele)
             { return ele | size(WIDTH, LESS_THAN, 30) | size(WIDTH, GREATER_THAN, 25) | size(HEIGHT, LESS_THAN, 15); };
@@ -138,22 +148,23 @@ namespace tui {
             auto default_label_style = [](Element ele)
             { return ele | align_right | vcenter; };
             
-            auto text_input_cell = [&](std::string label, StringRef& constent, std::string placeholder, InputType inputType, \
+            auto text_input_cell = [&](std::string label, std::string* content, std::string placeholder, InputType inputType, \
                 std::function<Element(Element)> label_style, std::function<Element(Element)> input_style, std::function<Element(InputState)> transform)
             {
                 TextInputElementConfig input_config;
                 input_config.label = label;
                 input_config.input_type = inputType;
                 input_config.placeholder = placeholder;
-                input_config.content = constent;
+                input_config.content = content;
                 input_config.transform = transform;
                 input_config.input_style = input_style;
                 input_config.label_style = label_style;
                 input_config.multiline = false;
+                input_config.on_change = std::bind(on_change, label, input_type_map_reverse[inputType]);
                 return input_config;
             };
 
-            auto select_cell = [&](std::string label, Ref<int>& selected, std::vector<std::string> entries, InputType inputType, \
+            auto select_cell = [&](std::string label, int* selected, std::vector<std::string> entries, InputType inputType, \
                 std::function<Element(Element)> label_style, std::function<Element(Element)> input_style, std::function<Element(bool open, Element checkbox, Element radiobox)> transform = nullptr)
             {
                 SelectInputElementConfig input_config;
@@ -161,6 +172,7 @@ namespace tui {
                 input_config.input_type = inputType;
                 input_config.radiobox.entries = std::move(entries);
                 input_config.radiobox.selected = selected;
+                input_config.radiobox.on_change = std::bind(on_change, label, input_type_map_reverse[inputType]);
                 input_config.transform = transform;
                 input_config.input_style = input_style;
                 input_config.label_style = label_style;
@@ -169,12 +181,6 @@ namespace tui {
 
             auto parsed_json = json::parse(json_str);
             
-            std::unordered_map<std::string, int> input_type_map = {
-                {"text", 0},
-                {"password", 1},
-                {"number", 2},
-                {"select", 3}
-            };
             std::vector<InputFormOptions::ElementRowConfig> form_rows;
 
             auto get_style = [=] (json element, std::function<Element(Element)> default_style = nullptr) {
@@ -220,7 +226,7 @@ namespace tui {
                 auto elements = item.is_array() ? item : json::array({item});
                 for (auto& cols_item : elements) {
                     if (cols_item["input_type"] == "text" || cols_item["input_type"] == "password" || cols_item["input_type"] == "number") {
-                        input_text_map[cols_item["label"]] = StringRef();
+                        input_text_map[cols_item["label"]] = "";
                         std::function<Element(Element)> label_style = nullptr;
                         std::function<Element(Element)> input_style = nullptr;
                         if (cols_item.contains("label_style")) {
@@ -230,14 +236,14 @@ namespace tui {
                             input_style = get_style(cols_item["input_style"], default_input_style);
                         }
                         cols.push_back(
-                            text_input_cell(cols_item["label"], input_text_map[cols_item["label"]], cols_item["placeholder"], (InputType)input_type_map[cols_item["input_type"]], label_style, input_style, text_input_transform)
+                            text_input_cell(cols_item["label"], &input_text_map[cols_item["label"]], cols_item["placeholder"], input_type_map[cols_item["input_type"]], label_style, input_style, text_input_transform)
                         );
                     } else if (cols_item["input_type"] == "select") {
                         int default_index = 0;
                         if (cols_item.contains("default_index")) {
                             default_index = cols_item["default_index"];
                         }
-                        input_select_index_map[cols_item["label"]] = Ref<int>(default_index);
+                        input_select_index_map[cols_item["label"]] = default_index;
                         input_select_entries_map[cols_item["label"]] = cols_item["entries"];
                         std::function<Element(Element)> label_style = nullptr;
                         std::function<Element(Element)> input_style = nullptr;
@@ -248,7 +254,7 @@ namespace tui {
                             input_style = get_style(cols_item["input_style"], default_select_input_style);
                         }
                         cols.push_back(
-                            select_cell(cols_item["label"], input_select_index_map[cols_item["label"]], input_select_entries_map[cols_item["label"]], (InputType)input_type_map[cols_item["input_type"]], label_style, input_style, select_input_transform)
+                            select_cell(cols_item["label"], &input_select_index_map[cols_item["label"]], input_select_entries_map[cols_item["label"]], input_type_map[cols_item["input_type"]], label_style, input_style, select_input_transform)
                         );
                     }
                 }
