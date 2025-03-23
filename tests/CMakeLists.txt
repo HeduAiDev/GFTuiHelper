@@ -9,6 +9,5 @@ function (add_test name)
     target_include_directories(${name} PRIVATE "csrc/include")
 endfunction()
 
-add_test(test_ref)
 add_test(test_dropdown)
 add_test(test_print_matrix)

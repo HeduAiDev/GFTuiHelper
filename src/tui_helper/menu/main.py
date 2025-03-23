@@ -3,12 +3,15 @@ import tui_helper as tui
 
 def main():
     def on_change(label, content):
-        if label == "GF_ENV2: " and len(content) > 0:
-            new_c = content[-1]
-            if not new_c.isdigit():
-               content = content[:-1]
+        # if label == "GF_ENV2: " and len(content) > 0:
+        #     new_c = content[-1]
+        #     if not new_c.isdigit():
+        #        content = content[:-1]
+        # if content == 'mindie_infer':
+        #     return 'train'
         return content
-        
+
+
     tui.start_menu_loop(
     """
     [

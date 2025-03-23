@@ -229,8 +229,7 @@ namespace tui {
         Component RadioFrame(RadioFrameOptions options = RadioFrameOptions());
         Component RadioFrame(ConstStringListRef entries, int* selected, RadioFrameOptions options = RadioFrameOptions());
         Component InputForm(std::vector<InputFormOptions::ElementRowConfig> elements_config, InputFormOptions options = InputFormOptions());
-        Component InputFormCreateFromJsonStr(std::string json_str, std::unordered_map<std::string, std::string> &input_text_map, std::unordered_map<std::string, int>& input_select_index_map, \
-            std::unordered_map<std::string, std::vector<std::string>>& input_select_entries_map, std::function<void(std::string, std::string)> on_change = nullptr, std::function<void()> on_enter = nullptr, std::function<Element(InputState)> text_input_transform = nullptr, std::function<Element(bool open, Element checkbox, Element radiobox)> select_input_transform = nullptr);
+        Component InputFormCreateFromJsonStr(std::string json_str, std::function<std::string(std::string, std::string)> on_change);
 
 
         Component MatrixFrame(float* ptr, int rows, int cols, MatrixFrameOptions<float> options = MatrixFrameOptions<float>());

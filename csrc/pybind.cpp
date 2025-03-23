@@ -4,8 +4,10 @@
 #include <pybind11/stl.h>
 #include <pybind11/complex.h>
 #include "tui_tool_sets_runable.hpp"
+#include "tui_tool_sets.hpp"
 
 using namespace tui::runable;
+using namespace ftxui;
 namespace py = pybind11;
 
 template<typename T>
