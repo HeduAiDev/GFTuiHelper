@@ -47,11 +47,15 @@ void PyStartMenuLoop(Component component) {
     tui::component::start_menu_loop(component);
 }
 
-Component PyCreateForm(std::string config, std::function<std::string(std::string, std::string)> on_change) {
-    return tui::component::InputFormCreateFromJsonStr(config, on_change);
+Component PyCreateForm(py::object config, std::function<std::string(std::string, std::string)> on_change) {
+    py::object json_dumps = py::module_::import("json").attr("dumps");
+    std::string config_str = json_dumps(config).cast<std::string>();
+    return tui::component::InputFormCreateFromJsonStr(config_str, on_change);
 }
 
-Component PyCreateFormWithData(std::shared_ptr<RefData> data, std::string config, std::function<std::string(std::string, std::string)> on_change) {
+Component PyCreateFormWithData(std::shared_ptr<RefData> data, py::object config, std::function<std::string(std::string, std::string)> on_change) {
+    py::object json_dumps = py::module_::import("json").attr("dumps");
+    std::string config_str = json_dumps(config).cast<std::string>();
     std::shared_ptr<std::unordered_map<std::string, std::string>> input_text_map = std::make_shared<std::unordered_map<std::string, std::string>>();
     std::shared_ptr<std::unordered_map<std::string, int>> input_select_index_map = std::make_shared<std::unordered_map<std::string, int>>();
     data->get_data = [input_text_map, input_select_index_map]() -> std::shared_ptr<std::unordered_map<std::string, std::string>> {
@@ -84,7 +88,7 @@ Component PyCreateFormWithData(std::shared_ptr<RefData> data, std::string config
             (*input_select_index_map).erase(key);
         }
     };
-    return tui::component::InputFormCreateFromJsonStr(config, on_change, input_text_map, input_select_index_map);
+    return tui::component::InputFormCreateFromJsonStr(config_str, on_change, input_text_map, input_select_index_map);
 }
 
 Component PyCreateButton(std::string label, std::function<void()> on_click, std::string style = "default") {

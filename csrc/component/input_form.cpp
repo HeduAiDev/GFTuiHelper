@@ -233,10 +233,10 @@ namespace tui {
                                 std::function<Element(Element)> label_style = nullptr;
                                 std::function<Element(Element)> input_style = nullptr;
                                 if (cols_item.contains("label_style")) {
-                                    label_style = utils::parse_element_style(cols_item["label_style"], default_label_style);
+                                    label_style = utils::parse_element_style<json, Element>(cols_item["label_style"], default_label_style);
                                 }
                                 if (cols_item.contains("input_style")) {
-                                    input_style = utils::parse_element_style(cols_item["input_style"], default_input_style);
+                                    input_style = utils::parse_element_style<json, Element>(cols_item["input_style"], default_input_style);
                                 }
                                 cols.push_back(
                                     text_input_cell(cols_item["label"], &(*input_text_map)[cols_item["label"]], cols_item["placeholder"], input_type_map[cols_item["input_type"]], label_style, input_style, text_input_transform)
@@ -251,10 +251,10 @@ namespace tui {
                                 std::function<Element(Element)> label_style = nullptr;
                                 std::function<Element(Element)> input_style = nullptr;
                                 if (cols_item.contains("label_style")) {
-                                    label_style = utils::parse_element_style(cols_item["label_style"], default_label_style);
+                                    label_style = utils::parse_element_style<json, Element>(cols_item["label_style"], default_label_style);
                                 }
                                 if (cols_item.contains("input_style")) {
-                                    input_style = utils::parse_element_style(cols_item["input_style"], default_select_input_style);
+                                    input_style = utils::parse_element_style<json, Element>(cols_item["input_style"], default_select_input_style);
                                 }
                                 cols.push_back(
                                     select_cell(cols_item["label"], &(*input_select_index_map)[cols_item["label"]], input_select_entries_map[cols_item["label"]], input_type_map[cols_item["input_type"]], label_style, input_style, select_input_transform)
