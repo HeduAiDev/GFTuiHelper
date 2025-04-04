@@ -11,7 +11,7 @@
 namespace utils
 {
     using namespace std;
-
+    using namespace ftxui;
     struct pair_hash
     {
         template <class T1, class T2>
@@ -78,6 +78,45 @@ namespace utils
         }
         oss << "}";
         return oss.str();
+    };
+
+    template <typename T, typename K>
+    std::function<K(K)> parse_element_style(T element, std::function<K(K)> default_style = nullptr) {
+        std::function<K(K)> style = [](K ele) { return ele; };
+        if (default_style != nullptr) { style = default_style; }
+        std::function<K(K)> helper = style;
+        if (element.contains("min_width")) {
+            style = [=](K ele) { return helper(ele) | size(WIDTH, GREATER_THAN, element["min_width"]); };
+        }
+        helper = style;
+        if (element.contains("max_width")) {
+            style = [=](K ele) { return helper(ele) | size(WIDTH, LESS_THAN, element["max_width"]); };
+        }
+        helper = style;
+        if (element.contains("min_height")) {
+            style = [=](K ele) { return helper(ele) | size(HEIGHT, GREATER_THAN, element["min_height"]); };
+        }
+        helper = style;
+        if (element.contains("max_height")) {
+            style = [=](K ele) { return helper(ele) | size(HEIGHT, LESS_THAN, element["max_height"]); };
+        }
+        helper = style;
+        if (element.contains("align_h") && element["align_h"] == "center") {
+            style = [=](K ele) { return helper(ele) | hcenter; };
+        } else if (element.contains("align_h") && element["align_h"] == "right") {
+            style = [=](K ele) { return helper(ele) | align_right; };
+        } else if (element.contains("align_h") && element["align_h"] == "left") {
+            style = [=](K ele) { return helper(ele) | [](K child){ return hbox(std::move(child), filler()); }; };
+        }
+        helper = style;
+        if (element.contains("align_v") && element["align_v"] == "center") {
+            style = [=](K ele) { return helper(ele) | vcenter; };
+        } else if (element.contains("align_v") && element["align_v"] == "up") {
+            style = [=](K ele) { return helper(ele) | [](K child){ return vbox(std::move(child), filler()); }; };
+        } else if (element.contains("align_v") && element["align_v"] == "bottom") {
+            style = [=](K ele) { return helper(ele) | [](K child){ return vbox(filler(), std::move(child)); }; };
+        }
+        return style;
     };
 
 }

@@ -148,26 +148,6 @@ namespace tui {
                     return form_ -> OnEvent(event);
                 }
 
-                std::unordered_map<std::string, std::string> GetData() {
-                    std::unordered_map<std::string, std::string> data;
-                    for (const auto& pair : (*input_text_map)) {
-                        data[pair.first] = pair.second;
-                    }
-                    for (const auto& pair : (*input_select_index_map)) {
-                        data[pair.first] = ""+pair.second;
-                    }
-                    return data;
-                }
-                
-                void SetData(std::string key, std::string value) {
-                    if ((*input_text_map).find(key) != (*input_text_map).end()) {
-                        (*input_text_map)[key] = value;
-                    }
-                    if ((*input_select_index_map).find(key) != (*input_select_index_map).end()) {
-                        int index = std::stoi(value);
-                        (*input_select_index_map)[key] = index;
-                    }
-                }
                 private:
                 void on_change_wrapper (std::string label, std::string input_type) {
                     std::string content = "";
@@ -240,44 +220,6 @@ namespace tui {
                     return input_config;
                 };
 
-                std::function<Element(Element)> get_style(json element, std::function<Element(Element)> default_style = nullptr) {
-                    std::function<Element(Element)> style = [](Element ele) { return ele; };
-                    if (default_style != nullptr) { style = default_style; }
-                    std::function<Element(Element)> helper = style;
-                    if (element.contains("min_width")) {
-                        style = [=](Element ele) { return helper(ele) | size(WIDTH, GREATER_THAN, element["min_width"]); };
-                    }
-                    helper = style;
-                    if (element.contains("max_width")) {
-                        style = [=](Element ele) { return helper(ele) | size(WIDTH, LESS_THAN, element["max_width"]); };
-                    }
-                    helper = style;
-                    if (element.contains("min_height")) {
-                        style = [=](Element ele) { return helper(ele) | size(HEIGHT, GREATER_THAN, element["min_height"]); };
-                    }
-                    helper = style;
-                    if (element.contains("max_height")) {
-                        style = [=](Element ele) { return helper(ele) | size(HEIGHT, LESS_THAN, element["max_height"]); };
-                    }
-                    helper = style;
-                    if (element.contains("align_h") && element["align_h"] == "center") {
-                        style = [=](Element ele) { return helper(ele) | hcenter; };
-                    } else if (element.contains("align_h") && element["align_h"] == "right") {
-                        style = [=](Element ele) { return helper(ele) | align_right; };
-                    } else if (element.contains("align_h") && element["align_h"] == "left") {
-                        style = [=](Element ele) { return helper(ele) | [](Element child){ return hbox(std::move(child), filler()); }; };
-                    }
-                    helper = style;
-                    if (element.contains("align_v") && element["align_v"] == "center") {
-                        style = [=](Element ele) { return helper(ele) | vcenter; };
-                    } else if (element.contains("align_v") && element["align_v"] == "up") {
-                        style = [=](Element ele) { return helper(ele) | [](Element child){ return vbox(std::move(child), filler()); }; };
-                    } else if (element.contains("align_v") && element["align_v"] == "bottom") {
-                        style = [=](Element ele) { return helper(ele) | [](Element child){ return vbox(filler(), std::move(child)); }; };
-                    }
-                    return style;
-                };
-
                     
                 std::vector<InputFormOptions::ElementRowConfig> parse(std::string json_str) {
                     auto parsed_json = json::parse(json_str);
@@ -291,10 +233,10 @@ namespace tui {
                                 std::function<Element(Element)> label_style = nullptr;
                                 std::function<Element(Element)> input_style = nullptr;
                                 if (cols_item.contains("label_style")) {
-                                    label_style = get_style(cols_item["label_style"], default_label_style);
+                                    label_style = utils::parse_element_style(cols_item["label_style"], default_label_style);
                                 }
                                 if (cols_item.contains("input_style")) {
-                                    input_style = get_style(cols_item["input_style"], default_input_style);
+                                    input_style = utils::parse_element_style(cols_item["input_style"], default_input_style);
                                 }
                                 cols.push_back(
                                     text_input_cell(cols_item["label"], &(*input_text_map)[cols_item["label"]], cols_item["placeholder"], input_type_map[cols_item["input_type"]], label_style, input_style, text_input_transform)
@@ -309,10 +251,10 @@ namespace tui {
                                 std::function<Element(Element)> label_style = nullptr;
                                 std::function<Element(Element)> input_style = nullptr;
                                 if (cols_item.contains("label_style")) {
-                                    label_style = get_style(cols_item["label_style"], default_label_style);
+                                    label_style = utils::parse_element_style(cols_item["label_style"], default_label_style);
                                 }
                                 if (cols_item.contains("input_style")) {
-                                    input_style = get_style(cols_item["input_style"], default_select_input_style);
+                                    input_style = utils::parse_element_style(cols_item["input_style"], default_select_input_style);
                                 }
                                 cols.push_back(
                                     select_cell(cols_item["label"], &(*input_select_index_map)[cols_item["label"]], input_select_entries_map[cols_item["label"]], input_type_map[cols_item["input_type"]], label_style, input_style, select_input_transform)

@@ -24,5 +24,6 @@ def main():
     """,
     on_change
     )
+    c = c | {"align_h": "right"}
     tui.start_menu_loop(c)
     
