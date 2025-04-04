@@ -94,14 +94,22 @@ namespace tui {
             return std::make_shared<InputFormBase>(options);
         }
 
-        Component InputFormCreateFromJsonStr(std::string json_str, std::function<std::string(std::string, std::string)> on_change) {
+        Component InputFormCreateFromJsonStr(std::string json_str, std::function<std::string(std::string, std::string)> on_change, \
+                std::shared_ptr<std::unordered_map<std::string, std::string>> input_text_map_,
+                std::shared_ptr<std::unordered_map<std::string, int>> input_select_index_map_) {
             class Impl: public ComponentBase {
                 public:
-                explicit Impl(std::string json_str, std::function<std::string(std::string, std::string)> on_change): on_change_(on_change) {
+                explicit Impl(std::string json_str, std::function<std::string(std::string, std::string)> on_change, std::shared_ptr<std::unordered_map<std::string, std::string>> input_text_map_ = nullptr, std::shared_ptr<std::unordered_map<std::string, int>> input_select_index_map_ = nullptr)\
+                : on_change_(on_change), input_text_map(input_text_map_), input_select_index_map(input_select_index_map_) {
                     if (text_input_transform == nullptr) {
                         text_input_transform = default_input_transform;
                     }
-        
+                    if (input_text_map == nullptr) {
+                        input_text_map = std::make_shared<std::unordered_map<std::string, std::string>>();
+                    }
+                    if (input_select_index_map == nullptr) {
+                        input_select_index_map = std::make_shared<std::unordered_map<std::string, int>>();
+                    }
                     default_max_input_width = 30;
                     default_min_input_width = 25;
                     default_max_input_height = 5;
@@ -131,33 +139,54 @@ namespace tui {
                     Add(Container::Vertical({form_}));
                 }
 
+                
+                Element Render() override {
+                    return form_ -> Render();
+                }
+                
+                bool OnEvent(ftxui::Event event) override {
+                    return form_ -> OnEvent(event);
+                }
+
+                std::unordered_map<std::string, std::string> GetData() {
+                    std::unordered_map<std::string, std::string> data;
+                    for (const auto& pair : (*input_text_map)) {
+                        data[pair.first] = pair.second;
+                    }
+                    for (const auto& pair : (*input_select_index_map)) {
+                        data[pair.first] = ""+pair.second;
+                    }
+                    return data;
+                }
+                
+                void SetData(std::string key, std::string value) {
+                    if ((*input_text_map).find(key) != (*input_text_map).end()) {
+                        (*input_text_map)[key] = value;
+                    }
+                    if ((*input_select_index_map).find(key) != (*input_select_index_map).end()) {
+                        int index = std::stoi(value);
+                        (*input_select_index_map)[key] = index;
+                    }
+                }
+                private:
                 void on_change_wrapper (std::string label, std::string input_type) {
                     std::string content = "";
                     if (input_type == "text" || input_type == "password" || input_type == "number") {
-                        content = input_text_map[label];
+                        content = (*input_text_map)[label];
                         content = on_change_(label, content);
-                        input_text_map[label] = content;
+                        (*input_text_map)[label] = content;
                     } else if (input_type == "select") {
                         auto entries = input_select_entries_map[label];
-                        content = entries[input_select_index_map[label]];
+                        content = entries[(*input_select_index_map)[label]];
                         content = on_change_(label, content);
                         for (int i = 0; i < entries.size(); i++) {
                             if (entries[i] == content) {
-                                input_select_index_map[label] = i;
+                                (*input_select_index_map)[label] = i;
                                 break;
                             }
                         }
                     }
                 };
-
-                Element Render() override {
-                    return form_ -> Render();
-                }
-
-                bool OnEvent(ftxui::Event event) override {
-                    return form_ -> OnEvent(event);
-                }
-
                 std::function<Element(InputState)> default_input_transform = [](InputState state)
                 {
                     state.element |= borderRounded;
@@ -258,7 +287,7 @@ namespace tui {
                         auto elements = item.is_array() ? item : json::array({item});
                         for (auto& cols_item : elements) {
                             if (cols_item["input_type"] == "text" || cols_item["input_type"] == "password" || cols_item["input_type"] == "number") {
-                                input_text_map[cols_item["label"]] = "";
+                                (*input_text_map)[cols_item["label"]] = "";
                                 std::function<Element(Element)> label_style = nullptr;
                                 std::function<Element(Element)> input_style = nullptr;
                                 if (cols_item.contains("label_style")) {
@@ -268,14 +297,14 @@ namespace tui {
                                     input_style = get_style(cols_item["input_style"], default_input_style);
                                 }
                                 cols.push_back(
-                                    text_input_cell(cols_item["label"], &input_text_map[cols_item["label"]], cols_item["placeholder"], input_type_map[cols_item["input_type"]], label_style, input_style, text_input_transform)
+                                    text_input_cell(cols_item["label"], &(*input_text_map)[cols_item["label"]], cols_item["placeholder"], input_type_map[cols_item["input_type"]], label_style, input_style, text_input_transform)
                                 );
                             } else if (cols_item["input_type"] == "select") {
                                 int default_index = 0;
                                 if (cols_item.contains("default_index")) {
                                     default_index = cols_item["default_index"];
                                 }
-                                input_select_index_map[cols_item["label"]] = default_index;
+                                (*input_select_index_map)[cols_item["label"]] = default_index;
                                 input_select_entries_map[cols_item["label"]] = cols_item["entries"];
                                 std::function<Element(Element)> label_style = nullptr;
                                 std::function<Element(Element)> input_style = nullptr;
@@ -286,7 +315,7 @@ namespace tui {
                                     input_style = get_style(cols_item["input_style"], default_select_input_style);
                                 }
                                 cols.push_back(
-                                    select_cell(cols_item["label"], &input_select_index_map[cols_item["label"]], input_select_entries_map[cols_item["label"]], input_type_map[cols_item["input_type"]], label_style, input_style, select_input_transform)
+                                    select_cell(cols_item["label"], &(*input_select_index_map)[cols_item["label"]], input_select_entries_map[cols_item["label"]], input_type_map[cols_item["input_type"]], label_style, input_style, select_input_transform)
                                 );
                             }
                         }
@@ -296,9 +325,8 @@ namespace tui {
                 }
 
         
-            private:
-                std::unordered_map<std::string, std::string> input_text_map;
-                std::unordered_map<std::string, int> input_select_index_map;
+                std::shared_ptr<std::unordered_map<std::string, std::string>> input_text_map;
+                std::shared_ptr<std::unordered_map<std::string, int>> input_select_index_map;
                 std::unordered_map<std::string, std::vector<std::string>> input_select_entries_map;
                 std::function<Element(InputState)> text_input_transform;
                 std::function<Element(bool open, Element checkbox, Element radiobox)> select_input_transform;
@@ -316,7 +344,7 @@ namespace tui {
                 std::function<std::string(std::string, std::string)> on_change_;
                 Component form_;
             };
-            return Make<Impl>(json_str, on_change);
+            return Make<Impl>(json_str, on_change, input_text_map_, input_select_index_map_);
         }
     }
 }

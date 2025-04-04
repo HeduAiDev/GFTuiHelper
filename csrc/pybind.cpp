@@ -5,7 +5,7 @@
 #include <pybind11/complex.h>
 #include "tui_tool_sets_runable.hpp"
 #include "tui_tool_sets.hpp"
-
+#include "bind.hpp"
 using namespace tui::runable;
 using namespace ftxui;
 namespace py = pybind11;
@@ -43,15 +43,66 @@ void PyDiff_(py::array_t<T> a, py::array_t<T> b, double accuracy = 1e-3) {
     diff(ptr_a, ptr_b, rows, cols, accuracy);
 }
 
-void PyStartMenuLoop(std::string menu1_config, std::function<std::string(std::string, std::string)> menu1_on_change) {
-    start_menu_loop(menu1_config, menu1_on_change);
+void PyStartMenuLoop(Component component) {
+    tui::component::start_menu_loop(component);
 }
 
+Component PyCreateForm(std::string config, std::function<std::string(std::string, std::string)> on_change) {
+    return tui::component::InputFormCreateFromJsonStr(config, on_change);
+}
 
+Component PyCreateFormWithData(std::shared_ptr<RefData> data, std::string config, std::function<std::string(std::string, std::string)> on_change) {
+    std::shared_ptr<std::unordered_map<std::string, std::string>> input_text_map = std::make_shared<std::unordered_map<std::string, std::string>>();
+    std::shared_ptr<std::unordered_map<std::string, int>> input_select_index_map = std::make_shared<std::unordered_map<std::string, int>>();
+    data->get_data = [input_text_map, input_select_index_map]() -> std::shared_ptr<std::unordered_map<std::string, std::string>> {
+        std::shared_ptr<std::unordered_map<std::string, std::string>> _data = std::make_shared<std::unordered_map<std::string, std::string>>();
+        for (const auto& pair : (*input_text_map)) {
+            (*_data)[pair.first] = pair.second;
+        }
+        for (const auto& pair : (*input_select_index_map)) {
+            (*_data)[pair.first] = std::to_string(pair.second);
+        }
+        return _data;
+    };
+    data->set_data = [input_text_map, input_select_index_map](std::string key, std::string value) {
+        if ((*input_text_map).find(key) != (*input_text_map).end()) {
+            (*input_text_map)[key] = value;
+            return;
+        }
+        if ((*input_select_index_map).find(key) != (*input_select_index_map).end()) {
+            int index = std::stoi(value);
+            (*input_select_index_map)[key] = index;
+            return;
+        }
+        throw std::runtime_error("key not found"+ utils::map_repr(input_text_map.get()) + utils::map_repr(input_select_index_map.get()));
+    };
 
+    data->del_key = [input_text_map, input_select_index_map](std::string key) {
+        if ((*input_text_map).find(key) != (*input_text_map).end()) {
+            (*input_text_map).erase(key);
+        }else if ((*input_select_index_map).find(key) != (*input_select_index_map).end()) {
+            (*input_select_index_map).erase(key);
+        }
+    };
+    return tui::component::InputFormCreateFromJsonStr(config, on_change, input_text_map, input_select_index_map);
+}
+
+Component PyCreateButton(std::string label, std::function<void()> on_click, std::string style = "default") {
+    ButtonOption option;
+    if (style == "default") {
+       option = ButtonOption::Animated();
+    } else if (style == "ascii") {
+       option = ButtonOption::Ascii();
+    } else {
+       throw std::runtime_error("unknown style: " + style);
+    }
+    return Button(label, on_click, option);
+}
 
 PYBIND11_MODULE(_C, m) {
     m.doc() = "A set of useful TUI tools ";
+    init_refdata(m);
+    init_component(m);
     m.def("print_matrix_double", &PyPrint_matrix_<double>);
     m.def("print_matrix_float", &PyPrint_matrix_<float>);
     #ifdef __CUDA__
@@ -63,4 +114,8 @@ PYBIND11_MODULE(_C, m) {
     m.def("diff_half", &PyDiff_<half>);
     #endif
     m.def("start_menu_loop", &PyStartMenuLoop);
+    m.def("create_form", &PyCreateForm);
+    m.def("create_form_with_data", &PyCreateFormWithData);
+    m.def("create_button", &PyCreateButton);
+    
 }

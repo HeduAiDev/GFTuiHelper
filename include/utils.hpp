@@ -64,4 +64,20 @@ namespace utils
         return std::wstring(buf.get(), buf.get() + size_buf - 1);
     }
 
+    template <typename K, typename V>
+    std::string map_repr(std::unordered_map<K, V>* map) {
+        std::ostringstream oss;
+        oss << "{";
+        bool first = true;
+        for (const auto& pair : *map) {
+            if (!first) {
+                oss << ", ";
+            }
+            oss << "\"" << pair.first << "\": " << pair.second;
+            first = false;
+        }
+        oss << "}";
+        return oss.str();
+    };
+
 }

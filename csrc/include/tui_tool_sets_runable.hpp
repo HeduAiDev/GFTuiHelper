@@ -84,7 +84,8 @@ namespace tui
         #ifdef __CUDA__
         void diff(half *ptr_a, half *ptr_b, int rows, int cols, double accuracy = 1e-3);
         #endif
-        void start_menu_loop(std::string menu1_config, std::function<std::string(std::string, std::string)> menu1_on_change);
+        
+        
     } // namespace runable
     
 } // namespace tui

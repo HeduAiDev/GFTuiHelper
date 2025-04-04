@@ -30,7 +30,7 @@
 namespace tui {
     namespace component {
         using namespace ftxui;
-
+        
         struct Resizable4BlockOptions {
             Element placeholder_block1 = nullptr;
             Element placeholder_block2 = nullptr;
@@ -229,7 +229,9 @@ namespace tui {
         Component RadioFrame(RadioFrameOptions options = RadioFrameOptions());
         Component RadioFrame(ConstStringListRef entries, int* selected, RadioFrameOptions options = RadioFrameOptions());
         Component InputForm(std::vector<InputFormOptions::ElementRowConfig> elements_config, InputFormOptions options = InputFormOptions());
-        Component InputFormCreateFromJsonStr(std::string json_str, std::function<std::string(std::string, std::string)> on_change);
+        Component InputFormCreateFromJsonStr(std::string json_str, std::function<std::string(std::string, std::string)> on_change, \
+            std::shared_ptr<std::unordered_map<std::string, std::string>> input_text_map_ = nullptr,
+            std::shared_ptr<std::unordered_map<std::string, int>> input_select_index_map_ = nullptr);
 
 
         Component MatrixFrame(float* ptr, int rows, int cols, MatrixFrameOptions<float> options = MatrixFrameOptions<float>());
@@ -238,6 +240,7 @@ namespace tui {
         #ifdef __CUDA__
         Component MatrixFrame(half* ptr, int rows, int cols, MatrixFrameOptions<half> options = MatrixFrameOptions<half>());
         #endif
+        void start_menu_loop(Component component);
     }
 }
 tui::component::MatrixFrameOptionsCommonElementStyle::ElementStyle operator|( tui::component::MatrixFrameOptionsCommonElementStyle::ElementStyle lhs, tui::component::MatrixFrameOptionsCommonElementStyle::ElementStyle rhs);

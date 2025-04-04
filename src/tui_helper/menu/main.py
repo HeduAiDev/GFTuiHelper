@@ -1,19 +1,19 @@
 
 import tui_helper as tui
+from time import sleep
 
 def main():
+    data = tui.RefData()
     def on_change(label, content):
-        # if label == "GF_ENV2: " and len(content) > 0:
-        #     new_c = content[-1]
-        #     if not new_c.isdigit():
-        #        content = content[:-1]
-        # if content == 'mindie_infer':
-        #     return 'train'
+        if label == "GF_TASK_TYPE: ":
+            cnt = data["GF_TASK_TYPE: "]
+            if cnt == "0":
+                data["GF_ENV2: "]= "mindie_train"
+                return "mindie_infer"
+        
         return content
-
-
-    tui.start_menu_loop(
-    """
+    
+    c = tui.create_form_with_data(data,"""
     [
         [{"input_type": "number", "label": "GF_ENV: ", "placeholder": "right click to paste", "input_style":{"align_h": "left", "max_width": 10}, "label_style":{"align_h": "center"}},
         {"input_type": "text", "label": "GF_ENV2: ", "placeholder": "right click to paste"}
@@ -24,3 +24,5 @@ def main():
     """,
     on_change
     )
+    tui.start_menu_loop(c)
+    
