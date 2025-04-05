@@ -8,11 +8,12 @@ namespace tui {
         using namespace ftxui;
         using json = nlohmann::json;
 
+
         InputFormBase::InputFormBase(InputFormOptions& options): InputFormOptions(options) {
-            Component vertical = Container::Vertical({});
+            Component vertical = Container::Vertical({}, &vselector);
             for (int i = 0; i < options.elements_config.size(); i++) {
                 components_.push_back(renderFormRow(options.elements_config[i]));
-                vertical->Add(Container::Horizontal(components_[i]));
+                vertical->Add(Container::Horizontal(components_[i], &hselector));
             }
             Add(vertical);
         };
@@ -87,6 +88,23 @@ namespace tui {
         }
         Element InputFormBase::setWidth(Element element, int max_width, int min_width) {
             return element | size(WIDTH, LESS_THAN, max_width) | size(WIDTH, GREATER_THAN, min_width);
+        }
+
+        bool InputFormBase::OnEvent(Event event) {
+            if (ComponentBase::OnEvent(event)) {
+                return true;
+            }
+            if (event.is_mouse() && (event.mouse().button == Mouse::WheelDown ||
+            event.mouse().button == Mouse::WheelUp) ) {
+                if (event.mouse().button == Mouse::WheelUp && vselector > 0) {
+                    (vselector)--;
+                }
+                if (event.mouse().button == Mouse::WheelDown && vselector < elements_config.size() - 1) {
+                    (vselector)++;
+                }
+                return true;
+            }
+            return false;
         }
 
         Component InputForm(std::vector<InputFormOptions::ElementRowConfig> elements_config, InputFormOptions options) {
@@ -233,10 +251,10 @@ namespace tui {
                                 std::function<Element(Element)> label_style = nullptr;
                                 std::function<Element(Element)> input_style = nullptr;
                                 if (cols_item.contains("label_style")) {
-                                    label_style = utils::parse_element_style<json, Element>(cols_item["label_style"], default_label_style);
+                                    label_style = utils::parse_element_style(cols_item["label_style"], default_label_style);
                                 }
                                 if (cols_item.contains("input_style")) {
-                                    input_style = utils::parse_element_style<json, Element>(cols_item["input_style"], default_input_style);
+                                    input_style = utils::parse_element_style(cols_item["input_style"], default_input_style);
                                 }
                                 cols.push_back(
                                     text_input_cell(cols_item["label"], &(*input_text_map)[cols_item["label"]], cols_item["placeholder"], input_type_map[cols_item["input_type"]], label_style, input_style, text_input_transform)

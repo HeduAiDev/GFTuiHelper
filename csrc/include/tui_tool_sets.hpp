@@ -146,11 +146,14 @@ namespace tui {
             public:
                 explicit InputFormBase(InputFormOptions& options);
                 Element Render() override;
+                bool OnEvent(Event event) override;
             private:
                 Component setWidth(Component component, int max_width, int min_width);
                 Element setWidth(Element element, int max_width, int min_width);
                 std::vector<Component> renderFormRow(ElementRowConfig row);
                 std::vector<std::vector<Component>> components_;
+                int vselector = 0;
+                int hselector = 0;
         };
 
         struct MatrixFrameOptionsCommonElementStyle
@@ -240,7 +243,7 @@ namespace tui {
         #ifdef __CUDA__
         Component MatrixFrame(half* ptr, int rows, int cols, MatrixFrameOptions<half> options = MatrixFrameOptions<half>());
         #endif
-        void start_menu_loop(Component component);
+        void start_menu_loop(Component component, std::string type = "full_screen");
     }
 }
 tui::component::MatrixFrameOptionsCommonElementStyle::ElementStyle operator|( tui::component::MatrixFrameOptionsCommonElementStyle::ElementStyle lhs, tui::component::MatrixFrameOptionsCommonElementStyle::ElementStyle rhs);

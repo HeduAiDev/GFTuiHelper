@@ -43,8 +43,8 @@ void PyDiff_(py::array_t<T> a, py::array_t<T> b, double accuracy = 1e-3) {
     diff(ptr_a, ptr_b, rows, cols, accuracy);
 }
 
-void PyStartMenuLoop(Component component) {
-    tui::component::start_menu_loop(component);
+void PyStartMenuLoop(Component component, std::string type) {
+    tui::component::start_menu_loop(component, type);
 }
 
 Component PyCreateForm(py::object config, std::function<std::string(std::string, std::string)> on_change) {
@@ -117,9 +117,9 @@ PYBIND11_MODULE(_C, m) {
     #ifdef __CUDA__
     m.def("diff_half", &PyDiff_<half>);
     #endif
-    m.def("start_menu_loop", &PyStartMenuLoop);
-    m.def("create_form", &PyCreateForm);
-    m.def("create_form_with_data", &PyCreateFormWithData);
+    m.def("start_menu_loop", &PyStartMenuLoop, py::arg("component"), py::arg("type") = "full_screen");
+    m.def("create_form", &PyCreateForm, py::arg("config"), py::arg("on_change"));
+    m.def("create_form_with_data", &PyCreateFormWithData, py::arg("data"), py::arg("config"), py::arg("on_change"));
     m.def("create_button", &PyCreateButton);
     
 }

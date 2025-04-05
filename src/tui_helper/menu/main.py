@@ -1,15 +1,15 @@
 
 import tui_helper as tui
-from time import sleep
 
 def main():
     data = tui.RefData()
     def on_change(label, content):
+        if label == "GF_MODEL: ":
+            data["GF_ENV2: "] = data["GF_MODEL: "]
+        if label == "GF_ENV2: ":
+            data["GF_MODEL: "] = data["GF_ENV2: "]
         if label == "GF_TASK_TYPE: ":
-            cnt = data["GF_TASK_TYPE: "]
-            if cnt == "0":
-                data["GF_ENV2: "]= "mindie_train"
-                return "mindie_infer"
+            data["GF_ENV2: "]= content
         
         return content
     
@@ -20,10 +20,31 @@ def main():
         {"input_type": "text", "label": "GF_ENV2: ", "placeholder": "right click to paste"}
         ],
         {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
+        {"input_type": "text", "label": "GF_MODEL: ", "placeholder": "right click to paste"},
         {"input_type": "select", "label": "GF_TASK_TYPE: ", "entries": ["train", "mindie_infer", "vllm_infer"], "default_index": 2}
     ],
     on_change
     )
-    c = c | {"align_h": "right"}
-    tui.start_menu_loop(c)
+    c = c | {"align_h": "center"} | {"vframe": True}  | {"max_height": 5}
+    tui.start_menu_loop(c, type="fit_component")
     

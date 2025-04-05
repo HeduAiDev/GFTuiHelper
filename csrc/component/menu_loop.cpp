@@ -7,9 +7,9 @@ namespace tui {
     namespace component {
         using namespace ftxui;
         using json = nlohmann::json;
-        void start_menu_loop(Component component)
+        void start_menu_loop(Component component, std::string type)
         {
-            auto screen = ScreenInteractive::Fullscreen();
+            
             /////////////////////////////////////////////////////////////////////
             // lowcode command builder
             /////////////////////////////////////////////////////////////////////
@@ -42,7 +42,15 @@ namespace tui {
             //                                    { return vbox({text(title()) | bold | hcenter,
             //                                                   tab_section->Render(),
             //                                                   tab_content->Render()}); });
-            screen.Loop(component);
+            if (type == "full_screen") {
+                auto screen = ScreenInteractive::Fullscreen();
+                screen.Loop(component);
+            } else if (type == "fit_component") {
+                auto screen = ScreenInteractive::FitComponent();
+                screen.Loop(component);
+            } else {
+                throw std::runtime_error("unknown screen type: " + type);
+            }
         }
     }
 }

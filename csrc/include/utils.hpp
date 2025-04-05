@@ -116,6 +116,26 @@ namespace utils
         } else if (element.contains("align_v") && element["align_v"] == "bottom") {
             style = [=](K ele) { return helper(ele) | [](K child){ return vbox(filler(), std::move(child)); }; };
         }
+        helper = style;
+        if (element.contains("vscroll") && element["vscroll"] == true) {
+            style = [=](K ele) { return helper(ele) | vscroll_indicator; };
+        }
+        helper = style;
+        if (element.contains("hscroll") && element["hscroll"] == true) {
+            style = [=](K ele) { return helper(ele) | hscroll_indicator; };
+        }
+        helper = style;
+        if (element.contains("frame") && element["frame"] == true) {
+            style = [=](K ele) { return helper(ele) | frame; };
+        }
+        helper = style;
+        if (element.contains("vframe") && element["vframe"] == true) {
+            style = [=](K ele) { return helper(ele) | vscroll_indicator | frame; };
+        }
+        helper = style;
+        if (element.contains("hframe") && element["hframe"] == true) {
+            style = [=](K ele) { return helper(ele) | hscroll_indicator | frame; };
+        }
         return style;
     };
 
