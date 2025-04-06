@@ -17,12 +17,12 @@ namespace tui {
                 Container::Horizontal({
                     block1_,
                     block2_,
-                }),
+                }, &hselector),
                 Container::Horizontal({
                     block3_,
                     block4_,
-                })
-            }));
+                }, &hselector)
+            }, &vselector));
         };
 
         ResizableSplitBlockbase::ResizableSplitBlockbase(Component block1, Component block2, Component block3, const ResizableSplitBlockOptions options)
@@ -42,8 +42,8 @@ namespace tui {
                     Container::Horizontal({
                         block2_,
                         block3_,
-                    }),
-                }));
+                    }, &hselector),
+                }, &vselector));
             // block1|block2
             // -------------
             // block3
@@ -55,9 +55,9 @@ namespace tui {
                     Container::Horizontal({
                         block1_,
                         block2_,
-                    }),
+                    }, &hselector),
                     block3_,
-                }));
+                }, &vselector));
             // block1|block2
             //       |------
             //       |block3
@@ -70,8 +70,8 @@ namespace tui {
                     Container::Vertical({
                         block2_,
                         block3_,
-                    }),
-                }));
+                    }, &vselector),
+                }, &hselector));
             // block1|block2
             // ------|
             // block3|
@@ -83,9 +83,9 @@ namespace tui {
                     Container::Vertical({
                         block1_,
                         block3_,
-                    }),
+                    }, &vselector),
                     block2_,
-                }));
+                }, &hselector));
             } else {
                 throw std::runtime_error("Invalid Block3 split type:" + std::to_string(static_cast<int>(options_.split_type)));
             }
@@ -103,7 +103,7 @@ namespace tui {
                 Add(Container::Horizontal({
                         block1_,
                         block2_,
-                    }));
+                    }, &hselector));
             // block1
             // ------
             // block3
@@ -114,7 +114,7 @@ namespace tui {
                 Add(Container::Vertical({
                     block1_,
                     block2_,
-                }));
+                }, &vselector));
             } else {
                 throw std::runtime_error("Invalid Block2 split type:" + std::to_string(static_cast<int>(options_.split_type)));
             }
@@ -123,8 +123,8 @@ namespace tui {
         Element ResizableSplitBlockbase::Render()  {
             int container_width = std::max(contianer.x_max - contianer.x_min, 30);
             int container_height = std::max(contianer.y_max - contianer.y_min, 10);
-            int block_width = options_.base_x_percent() * container_width + bias_x_;
-            int block_height = options_.base_y_percent() * container_height + bias_y_;
+            int block_width = std::min((int)(options_.base_x_percent() * container_width + bias_x_), container_width);
+            int block_height = std::min((int)(options_.base_y_percent() * container_height + bias_y_), container_height);
             auto set_block_height = [&]() {
                 return size(HEIGHT, EQUAL, block_height);
             };
@@ -236,14 +236,27 @@ namespace tui {
 
 
         bool ResizableSplitBlockbase::OnEvent(Event event) {
+            if (ComponentBase::OnEvent(std::move(event))) {
+                return true;
+            }
             if (event.is_mouse())
             {
-                OnMouseEvent(std::move(event));
+                return OnMouseEvent(std::move(event));
             }
-            return ComponentBase::OnEvent(std::move(event));
         };
 
         bool ResizableSplitBlockbase::OnMouseEvent(Event event) {
+            // if (event.is_mouse() && (event.mouse().button == Mouse::WheelDown ||
+            // event.mouse().button == Mouse::WheelUp) ) {
+            //     if (event.mouse().button == Mouse::WheelUp && vselector > 0) {
+            //         (vselector)--;
+            //     }
+            //     if (event.mouse().button == Mouse::WheelDown && vselector < this->ChildCount() - 1) {
+            //         (vselector)++;
+            //     }
+            //     return true;
+            // }
+
             is_hover_hseparator_ = (hseparator_box_ != nullptr && hseparator_box_->Contain(event.mouse().x, event.mouse().y));
             is_hover_vseparator_up_ = (vseparator_up_box_ != nullptr && vseparator_up_box_->Contain(event.mouse().x, event.mouse().y));
             is_hover_vseparator_down_ = (vseparator_down_box_ != nullptr && vseparator_down_box_->Contain(event.mouse().x, event.mouse().y));
@@ -269,21 +282,25 @@ namespace tui {
             if (!isDragging()) {
                 return false;
             }
-            if (is_dragging_hseparator_) {
+            if (is_dragging_hseparator_ ) {
             // y direction movement
-                bias_y_ += event.mouse().y - hseparator_box_->y_min;
+                if (contianer.y_min < event.mouse().y && contianer.y_max > event.mouse().y) {
+                    bias_y_ += event.mouse().y - hseparator_box_->y_min;
+                }
             } else {
             // x direction movement
-                if (vseparator_up_box_ != nullptr) {
-                    bias_x_ += event.mouse().x - vseparator_up_box_->x_min;
-                } else if (vseparator_down_box_ != nullptr) {
-                    bias_x_ += event.mouse().x - vseparator_down_box_->x_min;
-                } else {
-                    throw std::runtime_error("One of vseparator_up_box_ or vseparator_down_box_ should not be nullptr");
+                if (contianer.x_min < event.mouse().x && contianer.x_max > event.mouse().x) {
+                    if (vseparator_up_box_ != nullptr) {
+                        bias_x_ += event.mouse().x - vseparator_up_box_->x_min;
+                    } else if (vseparator_down_box_ != nullptr) {
+                        bias_x_ += event.mouse().x - vseparator_down_box_->x_min;
+                    } else {
+                        throw std::runtime_error("One of vseparator_up_box_ or vseparator_down_box_ should not be nullptr");
+                    }
                 }
             }
             return true;
-        } 
+        }
 
 
         bool ResizableSplitBlockbase::isDragging() {

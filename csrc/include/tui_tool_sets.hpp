@@ -109,6 +109,8 @@ namespace tui {
                 int bias_y_ = 0;
                 ResizableSplitBlockOptions options_;
                 Box contianer;
+                int vselector = 0;
+                int hselector = 0;
         };
 
         struct RadioFrameOptions : public RadioboxOption {

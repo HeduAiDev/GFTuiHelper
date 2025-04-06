@@ -140,6 +140,18 @@ namespace utils
         if (element.contains("border") && element["border"] == true) {
             style = [=](K ele) { return helper(ele) | border; };
         }
+        helper = style;
+        if (element.contains("flex") && element["flex"] == true) {
+            style = [=](K ele) { return helper(ele) | flex; };
+        }
+        helper = style;
+        if (element.contains("xflex") && element["xflex"] == true) {
+            style = [=](K ele) { return helper(ele) | xflex; };
+        }
+        helper = style;
+        if (element.contains("yflex") && element["yflex"] == true) {
+            style = [=](K ele) { return helper(ele) | yflex; };
+        }
         return style;
     };
 

@@ -31,6 +31,7 @@ def main():
     d = tui.create_button("d", lambda :1)
     e = tui.create_button("e", lambda :1)
     f = tui.create_button("f", lambda :1)
+    g = tui.create_button("g", lambda :1)
     # 1. a | b        [[a, '|', b],
     #    -----   =>    '---------',
     #    c | d          [c, '|', d]]
@@ -59,7 +60,9 @@ def main():
     # l = layout('split', [[a, '|', b],
     #                     '---------',
     #                     [c, '|', d]])
-    l = layout('split', [a, "|", b, "|", c])
-    tui.start_menu_loop(l, type="full_screen")
+    # l = layout('split', [[[a, "|", b, "|", c, '----', [d, '|', e, '|', f]], '-----', a], '|', [b, '----', c]])
+    # l = layout('split', [[[a, '---', b, '---', d], '---', e], '|', [f,'---', g ]])
+    l = layout('split', [[[a, "|", b], "---", [c, "|", d]], "|" , [[e, "|", f], "---", [g, "|", a]]])
+    tui.start_menu_loop(l, type="fit_component")
 
     
