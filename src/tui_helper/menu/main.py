@@ -56,9 +56,10 @@ def main():
     # 7. a 
     #   ---     =>   [a, '---', b]
     #    b
-    l = layout('split', [[a, '|', b],
-                        '---------',    
-                        [c, '|', d]])
+    # l = layout('split', [[a, '|', b],
+    #                     '---------',
+    #                     [c, '|', d]])
+    l = layout('split', [a, "|", b, "|", c])
     tui.start_menu_loop(l, type="full_screen")
 
     

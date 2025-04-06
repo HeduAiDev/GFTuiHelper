@@ -48,7 +48,7 @@ def layout(type, config: list) -> ComponentBase:
         cc = collect_components = lambda x: [c for c in x if is_component(c)]
         dq = deque(config)
         while len(dq) > 1:
-            if len(dq) < 3:
+            if len(dq) < 3 or (not is_hseparator(dq[1]) and not is_vseparator(dq[1])):
                 raise ValueError("Invalid layout configuration")
             c = [dq.popleft() for _ in range(3)]
             # block4
@@ -75,8 +75,7 @@ def layout(type, config: list) -> ComponentBase:
             elif is_component(c[0]) and is_hseparator(c[1]) and is_component(c[2]):
                 dq.appendleft(layout_resizable_split(SplitLayoutType.Block2Vertical, [c[0], c[2]]))
             else:
-                raise ValueError("Invalid layout configuration")
-
+                dq.extendleft([ci if not is_list(ci) else layout(type, ci) for ci in c])
         return dq[0]
     else:
         raise ValueError(f"Invalid layout type {type}")
