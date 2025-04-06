@@ -32,6 +32,7 @@ def layout(type, config: list) -> ComponentBase:
     #    c |
     #
     # 6. a | b  =>   [a, '|', b]
+    #
     # 7. a 
     #   ---     =>   [a, '---', b]
     #    b
@@ -53,7 +54,7 @@ def layout(type, config: list) -> ComponentBase:
             # block4
             if is_split_v(c[0]) and is_hseparator(c[1]) and is_split_v(c[2]): 
                 dq.appendleft(layout_resizable_split(SplitLayoutType.Block4, cc(c[0] + c[2])))
-            if is_split_h(c[0]) and is_vseparator(c[1]) and is_split_h(c[2]): 
+            elif is_split_h(c[0]) and is_vseparator(c[1]) and is_split_h(c[2]): 
                 dq.appendleft(layout_resizable_split(SplitLayoutType.Block4, [c[0][0], c[2][0], c[0][2], c[2][2]]))
             # block3up
             elif is_component(c[0]) and is_hseparator(c[1]) and is_split_v(c[2]):
