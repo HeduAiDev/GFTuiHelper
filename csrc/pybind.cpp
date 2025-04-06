@@ -6,7 +6,9 @@
 #include "tui_tool_sets_runable.hpp"
 #include "tui_tool_sets.hpp"
 #include "bind.hpp"
+#include <vector>
 using namespace tui::runable;
+using namespace tui::component;
 using namespace ftxui;
 namespace py = pybind11;
 
@@ -47,11 +49,11 @@ void PyStartMenuLoop(Component component, std::string type) {
     tui::component::start_menu_loop(component, type);
 }
 
-Component PyCreateForm(py::object config, std::function<std::string(std::string, std::string)> on_change) {
-    py::object json_dumps = py::module_::import("json").attr("dumps");
-    std::string config_str = json_dumps(config).cast<std::string>();
-    return tui::component::InputFormCreateFromJsonStr(config_str, on_change);
-}
+// Component PyCreateForm(py::object config, std::function<std::string(std::string, std::string)> on_change) {
+//     py::object json_dumps = py::module_::import("json").attr("dumps");
+//     std::string config_str = json_dumps(config).cast<std::string>();
+//     return tui::component::InputFormCreateFromJsonStr(config_str, on_change);
+// }
 
 Component PyCreateFormWithData(std::shared_ptr<RefData> data, py::object config, std::function<std::string(std::string, std::string)> on_change) {
     py::object json_dumps = py::module_::import("json").attr("dumps");
@@ -91,7 +93,7 @@ Component PyCreateFormWithData(std::shared_ptr<RefData> data, py::object config,
     return tui::component::InputFormCreateFromJsonStr(config_str, on_change, input_text_map, input_select_index_map);
 }
 
-Component PyCreateButton(std::string label, std::function<void()> on_click, std::string style = "default") {
+Component PyCreateButton(std::string label, std::function<void()> on_click, std::string style) {
     ButtonOption option;
     if (style == "default") {
        option = ButtonOption::Animated();
@@ -101,6 +103,25 @@ Component PyCreateButton(std::string label, std::function<void()> on_click, std:
        throw std::runtime_error("unknown style: " + style);
     }
     return Button(label, on_click, option);
+}
+
+
+Component PyLayoutResizableSplit(py::object split_type, std::vector<Component> blocks, float base_x, float base_y){
+    auto split_type_ = static_cast<ResizableSplitBlockOptions::SplitType>(split_type.attr("value").cast<int>());
+    ResizableSplitBlockOptions options;
+    options.split_type = split_type_;
+    options.base_x_percent = base_x;
+    options.base_y_percent = base_y;
+    if (blocks.size() == 2) {
+        return ResizableSplitBlock(options, blocks[0], blocks[1]);
+    } else if (blocks.size() == 3) {
+        return ResizableSplitBlock(options, blocks[0], blocks[1], blocks[2]);
+    } else if (blocks.size() == 4) {
+        return ResizableSplitBlock(options, blocks[0], blocks[1], blocks[2], blocks[3]);
+    } else {
+        throw std::runtime_error("blocks size must be 2, 3 or 4");
+    }
+
 }
 
 PYBIND11_MODULE(_C, m) {
@@ -118,8 +139,7 @@ PYBIND11_MODULE(_C, m) {
     m.def("diff_half", &PyDiff_<half>);
     #endif
     m.def("start_menu_loop", &PyStartMenuLoop, py::arg("component"), py::arg("type") = "full_screen");
-    m.def("create_form", &PyCreateForm, py::arg("config"), py::arg("on_change"));
-    m.def("create_form_with_data", &PyCreateFormWithData, py::arg("data"), py::arg("config"), py::arg("on_change"));
-    m.def("create_button", &PyCreateButton);
-    
+    m.def("create_form", &PyCreateFormWithData, py::arg("data"), py::arg("config"), py::arg("on_change"));
+    m.def("create_button", &PyCreateButton, py::arg("label"), py::arg("on_click"), py::arg("style") = "default");
+    m.def("layout_resizable_split" , &PyLayoutResizableSplit, py::arg("split_type"), py::arg("blocks"), py::arg("base_x") = 0.5, py::arg("base_y") = 0.5);
 }

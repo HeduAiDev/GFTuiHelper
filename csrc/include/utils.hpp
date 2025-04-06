@@ -136,6 +136,10 @@ namespace utils
         if (element.contains("hframe") && element["hframe"] == true) {
             style = [=](K ele) { return helper(ele) | hscroll_indicator | frame; };
         }
+        helper = style;
+        if (element.contains("border") && element["border"] == true) {
+            style = [=](K ele) { return helper(ele) | border; };
+        }
         return style;
     };
 

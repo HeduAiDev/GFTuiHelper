@@ -130,15 +130,15 @@ namespace tui {
             auto matrixB_r = Renderer(matrixB, [&] {
                 return window(text("Matrix B") | hcenter | bold, matrixB -> Render());
             });
-            int base_y = 9;
-            Resizable4BlockOptions options;
-            options.base_y = &base_y;
+            float base_y_percent = 0.3;
+            ResizableSplitBlockOptions options;
+            options.base_y_percent = &base_y_percent;
             if (rows * cols > 2000) {
                 options.placeholder_block3 = text("Redraw matrix is inefficient") | center | bold;
                 options.placeholder_block4 = text("Redraw matrix is inefficient") | center | bold;
             }
             auto screen = ScreenInteractive::Fullscreen();
-            Component main_renderer = Resizable4Block(block1, block2, matrixA_r, matrixB_r, screen, options);
+            Component main_renderer = ResizableSplitBlock(options, block1, block2, matrixA_r, matrixB_r);
             main_renderer |= CatchEvent([&](Event event) {
                 if (event == Event::Character('q') || event == Event::Escape || event == Event::Return) {
                     screen.ExitLoopClosure()();

@@ -27,33 +27,54 @@
 #include <cuda_fp16.h>
 #endif
 
+#include <typeinfo>
+template <typename... Args>
+void PrintBlockTypes(Args&&... blocks) {
+    // 使用 std::initializer_list 打印每个参数的类型
+    (void)std::initializer_list<int>{
+        (std::cout << "Block type: " << typeid(blocks).name() << std::endl, 0)...
+    };
+}
+
 namespace tui {
     namespace component {
         using namespace ftxui;
         
-        struct Resizable4BlockOptions {
+        struct ResizableSplitBlockOptions {
+            enum class SplitType {
+                None = 0,
+                Block4,
+                Block3Up,
+                Block3Down,
+                Block3Left,
+                Block3Right,
+                Block2Horizontal,
+                Block2Vertical
+            };
             Element placeholder_block1 = nullptr;
             Element placeholder_block2 = nullptr;
             Element placeholder_block3 = nullptr;
             Element placeholder_block4 = nullptr;
+            SplitType split_type = SplitType::None;
             std::function<Element()> separator_func = [] { return separator(); };
             std::function<Element()> separator_hover_func = [] { return separatorHeavy(); };
-            Ref<int> base_x = -1;
-            Ref<int> base_y = -1;
-            Resizable4BlockOptions() = default;
+            Ref<float> base_x_percent = 0.5;
+            Ref<float> base_y_percent = 0.5;
+            ResizableSplitBlockOptions() = default;
             // Custom copy constructor
-            Resizable4BlockOptions(const Resizable4BlockOptions& other)
+            ResizableSplitBlockOptions(const ResizableSplitBlockOptions& other)
                 : placeholder_block1(other.placeholder_block1),
                 placeholder_block2(other.placeholder_block2),
                 placeholder_block3(other.placeholder_block3),
                 placeholder_block4(other.placeholder_block4),
+                split_type(other.split_type),
                 separator_func(other.separator_func),
                 separator_hover_func(other.separator_hover_func),
-                base_x(std::move(other.base_x)),
-                base_y(std::move(other.base_y)) {}
+                base_x_percent(std::move(other.base_x_percent)),
+                base_y_percent(std::move(other.base_y_percent)) {}
             };
 
-        class Resizable4Blockbase : public ftxui::ComponentBase {
+        class ResizableSplitBlockbase : public ftxui::ComponentBase {
             public:
                 enum class Direction {
                     Horizontal,
@@ -61,7 +82,9 @@ namespace tui {
                 };
                 // block1 | block2
                 // block3 | block4
-                explicit Resizable4Blockbase(Component block1, Component block2, Component block3, Component block4, ScreenInteractive& screen, Resizable4BlockOptions options = Resizable4BlockOptions());
+                explicit ResizableSplitBlockbase(Component block1, Component block2, Component block3, Component block4, ResizableSplitBlockOptions options = ResizableSplitBlockOptions());
+                explicit ResizableSplitBlockbase(Component block1, Component block2, Component block3, ResizableSplitBlockOptions options = ResizableSplitBlockOptions());
+                explicit ResizableSplitBlockbase(Component block1, Component block2, ResizableSplitBlockOptions options = ResizableSplitBlockOptions());
                 Element Render() override;
                 bool OnEvent(Event event) override;
                 bool OnMouseEvent(Event event);
@@ -73,10 +96,9 @@ namespace tui {
                 Component block2_;
                 Component block3_;
                 Component block4_;
-                ScreenInteractive& screen_;
-                Box vseparator_up_box_;
-                Box vseparator_down_box_;
-                Box hseparator_box_;
+                std::shared_ptr<Box> vseparator_up_box_;
+                std::shared_ptr<Box> vseparator_down_box_;
+                std::shared_ptr<Box> hseparator_box_;
                 bool is_hover_hseparator_ = false;
                 bool is_hover_vseparator_up_ = false;
                 bool is_hover_vseparator_down_ = false;
@@ -85,7 +107,8 @@ namespace tui {
                 bool is_dragging_vseparator_down_ = false;
                 int bias_x_ = 0;
                 int bias_y_ = 0;
-                Resizable4BlockOptions options_;
+                ResizableSplitBlockOptions options_;
+                Box contianer;
         };
 
         struct RadioFrameOptions : public RadioboxOption {
@@ -228,7 +251,18 @@ namespace tui {
         };
 
 
-        Component Resizable4Block(Component block1, Component block2, Component block3, Component block4, ScreenInteractive& screen, Resizable4BlockOptions options = Resizable4BlockOptions());
+        template <typename... Args>
+        Component ResizableSplitBlock(ResizableSplitBlockOptions options, Args&&... blocks ) {
+            constexpr size_t num_blocks = sizeof...(blocks);
+            if (num_blocks == 2 && options.split_type == ResizableSplitBlockOptions::SplitType::None) {
+                options.split_type = ResizableSplitBlockOptions::SplitType::Block2Horizontal;
+            } else if (num_blocks == 3 && options.split_type == ResizableSplitBlockOptions::SplitType::None) {
+                options.split_type = ResizableSplitBlockOptions::SplitType::Block3Left;
+            } else if (num_blocks == 4 && options.split_type == ResizableSplitBlockOptions::SplitType::None) {
+                options.split_type = ResizableSplitBlockOptions::SplitType::Block4;
+            }
+            return Make<ResizableSplitBlockbase>(std::forward<Args>(blocks)..., std::move(options));
+        }
         Component RadioFrame(RadioFrameOptions options = RadioFrameOptions());
         Component RadioFrame(ConstStringListRef entries, int* selected, RadioFrameOptions options = RadioFrameOptions());
         Component InputForm(std::vector<InputFormOptions::ElementRowConfig> elements_config, InputFormOptions options = InputFormOptions());

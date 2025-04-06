@@ -11,3 +11,4 @@ endfunction()
 
 add_test(test_dropdown)
 add_test(test_print_matrix)
+add_test(test_3block)
