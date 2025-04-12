@@ -92,6 +92,9 @@ Component PyCreateFormWithData(std::shared_ptr<RefData> data, py::object config,
     };
     return tui::component::InputFormCreateFromJsonStr(config_str, on_change, input_text_map, input_select_index_map);
 }
+std::function<std::string(std::string, std::string)> default_on_change = [](std::string key, std::string value) -> std::string {
+    return value;
+};
 
 Component PyCreateButton(std::string label, std::function<void()> on_click, std::string style) {
     ButtonOption option;
@@ -104,6 +107,7 @@ Component PyCreateButton(std::string label, std::function<void()> on_click, std:
     }
     return Button(label, on_click, option);
 }
+std::function<void()> default_on_click = [](){};
 
 
 Component PyLayoutResizableSplit(py::object split_type, std::vector<Component> blocks, float base_x, float base_y){
@@ -139,7 +143,7 @@ PYBIND11_MODULE(_C, m) {
     m.def("diff_half", &PyDiff_<half>);
     #endif
     m.def("start_menu_loop", &PyStartMenuLoop, py::arg("component"), py::arg("type") = "full_screen");
-    m.def("create_form", &PyCreateFormWithData, py::arg("data"), py::arg("config"), py::arg("on_change"));
-    m.def("create_button", &PyCreateButton, py::arg("label"), py::arg("on_click"), py::arg("style") = "default");
+    m.def("form", &PyCreateFormWithData, py::arg("data"), py::arg("config"), py::arg("on_change") = default_on_change);
+    m.def("button", &PyCreateButton, py::arg("label"), py::arg("on_click") = default_on_click, py::arg("style") = "default");
     m.def("layout_resizable_split" , &PyLayoutResizableSplit, py::arg("split_type"), py::arg("blocks"), py::arg("base_x") = 0.5, py::arg("base_y") = 0.5);
 }

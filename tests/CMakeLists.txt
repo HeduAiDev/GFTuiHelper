@@ -1,4 +1,7 @@
 function (add_test name)
+    if(NOT DEFINED ENABLE_TEST)
+        return()
+    endif()
     add_executable(${name} ${name}.cpp)
     target_link_libraries(${name} PRIVATE tui_static
                                     PRIVATE ftxui::screen

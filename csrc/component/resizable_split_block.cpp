@@ -243,6 +243,7 @@ namespace tui {
             {
                 return OnMouseEvent(std::move(event));
             }
+            return false;
         };
 
         bool ResizableSplitBlockbase::OnMouseEvent(Event event) {

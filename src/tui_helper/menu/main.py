@@ -13,7 +13,7 @@ def main():
         
         return content
     
-    c = tui.create_form(data,
+    c = tui.form(data,
     [
         [
             {"input_type": "number", "label": "GF_ENV: ", "placeholder": "right click to paste", "input_style":{"align_h": "left", "max_width": 10}, "label_style":{"align_h": "center"}},
@@ -25,13 +25,13 @@ def main():
     on_change
     )
     
-    a = tui.create_button("a", lambda :1)
-    b = tui.create_button("b", lambda :1)
+    a = tui.button("a")
+    b = tui.button("b")
     c = c | {"align_h": "center"} | {"vframe": True} 
-    d = tui.create_button("d", lambda :1)
-    e = tui.create_button("e", lambda :1)
-    f = tui.create_button("f", lambda :1)
-    g = tui.create_button("g", lambda :1)
+    d = tui.button("d")
+    e = tui.button("e")
+    f = tui.button("f")
+    g = tui.button("g")
     # 1. a | b        [[a, '|', b],
     #    -----   =>    '---------',
     #    c | d          [c, '|', d]]
@@ -64,5 +64,3 @@ def main():
     # l = layout('split', [[[a, '---', b, '---', d], '---', e], '|', [f,'---', g ]])
     l = layout('split', [[[a, "|", b], "---", [c, "|", d]], "|" , [[e, "|", f], "---", [g, "|", a]]])
     tui.start_menu_loop(l, type="fit_component")
-
-    

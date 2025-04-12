@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.18)
+cmake_minimum_required (VERSION 3.20)
 project(GFTuiHelper LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -13,8 +13,8 @@ find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
 find_package(Threads REQUIRED)
 
 # ftxui
-# add_subdirectory(3rd/FTXUI EXCLUDE_FROM_ALL)
-add_subdirectory(3rd/FTXUI)
+add_subdirectory(3rd/FTXUI EXCLUDE_FROM_ALL)
+# add_subdirectory(3rd/FTXUI)
 # pybind11
 add_subdirectory(3rd/pybind11 EXCLUDE_FROM_ALL)
 add_subdirectory(3rd/nlohmann EXCLUDE_FROM_ALL)
